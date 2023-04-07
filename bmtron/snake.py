@@ -7,7 +7,7 @@ from .consts import (
     NUM_ROWS,
     SNAKE_INITIAL_LENGTH,
 )
-from .types import Colour, Coord, Direction
+from .data_types import Colour, Coord, Direction
 
 
 class Snake:

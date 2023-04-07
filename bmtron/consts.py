@@ -1,4 +1,4 @@
-from .types import Colour, Direction
+from .data_types import Colour, Direction
 
 
 BOARD_SIZE = 1000

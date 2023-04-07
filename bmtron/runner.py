@@ -1,6 +1,8 @@
 import time
 import tkinter
 
+import zmq
+
 from .consts import UPDATE_DELAY_MS
 from .display import Display
 from .snake import Snake
@@ -21,6 +23,10 @@ class Runner:
         self.display = Display(self.window)
         self.snakes: list[Snake] = [Snake(i) for i in range(num_players)]
         self.crashed_ids: list[int] = []
+
+        ctx = zmq.Context()
+        self.sck = ctx.socket(zmq.REQ)
+        self.sck.connect("tcp://5.64.46.17:2302")
 
     def main(self) -> None:
         self.reset_game()
@@ -66,6 +72,9 @@ class Runner:
                 key_pressed = event.keysym
                 # Check if the pressed key is a valid key
                 if snake.is_key_valid(key_pressed):
+                    self.sck.send_string(key_pressed)
+                    msg = self.sck.recv()
+                    print(msg)
                     self.started = True
                     snake.set_heading(key_pressed)
 

@@ -2,7 +2,7 @@ import tkinter
 
 from .consts import BOARD_SIZE, NUM_COLS, NUM_ROWS
 from .snake import Snake
-from .types import Colour, Coord
+from .data_types import Colour, Coord
 
 
 class Display:
