@@ -46,7 +46,7 @@ class Snake:
     def set_from_msg(self, data: dict) -> None:
         self.coords = [Coord(coord[0], coord[1]) for coord in data["coords"]]
         self.crashed = data["crashed"]
-        self.heading = data["heading"]
+        self.heading = Direction(data["heading"])
 
     def update_coords(self) -> None:
         if self.heading == Direction.UP:

@@ -1,6 +1,7 @@
 import json
 import socket
 import threading
+import time
 
 from .snake import Snake
 
@@ -10,16 +11,19 @@ class Server(threading.Thread):
         super().__init__(*args, **kwargs)
         self.sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sck.settimeout(1)
-        self.running = True
+        self.running = False
         self.lock = threading.Lock()
         self.snakes: list[Snake] = []
 
     def run(self) -> None:
+        self.running = True
         while self.running:
             try:
                 self.listen()
             except TimeoutError:
                 ...
+
+            time.sleep(0.01)
 
     def listen(self) -> None:
         raise NotImplementedError
@@ -84,9 +88,13 @@ class ClientServer(Server):
     def __init__(self, address: tuple[str, int], *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.address = address
+        self.started = False
 
     def listen(self) -> None:
         msg = self.sck.recv(1024)
+        if msg == b"started":
+            self.started = True
+            return
         data = json.loads(msg.decode())
         with self.lock:
             for player, state in data.items():
@@ -102,7 +110,7 @@ class ClientServer(Server):
             raise Exception("Host returned invalid confirmation")
 
     def wait_for_game_start(self) -> tuple[int, int]:
-        while self.running:
+        while True:
             try:
                 msg = self.sck.recv(1024)
                 num_players, player_number = msg.decode().split(",")
@@ -110,15 +118,8 @@ class ClientServer(Server):
             except TimeoutError:
                 ...
 
-        raise Exception("Exited server before receiving game info")
+            time.sleep(0.01)
 
     def wait_for_round_start(self) -> None:
-        while self.running:
-            try:
-                msg = self.sck.recv(1024)
-                if msg == b"started":
-                    return
-            except TimeoutError:
-                ...
-
-        raise Exception("Exited server before starting round")
+        while not self.started:
+            time.sleep(0.1)
