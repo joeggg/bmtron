@@ -1,20 +1,23 @@
-import zmq
+import socket
 
 
 def main():
-    ctx = zmq.Context()
-    rep = ctx.socket(zmq.REP)
-    # 5.64.46.17
-    rep.bind("tcp://127.0.0.1:2302")
-    rep.setsockopt(zmq.RCVTIMEO, 1000)
+    sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sck.bind(("", 2302))
+    sck.settimeout(1)
 
+    print("Starting server")
     while True:
         try:
-            msg = rep.recv()
+            msg, addr = sck.recvfrom(1024)
             print(msg)
-            rep.send(b"hello")
-        except zmq.Again:
+            sck.sendto(b"confirmed", addr)
+        except TimeoutError:
             ...
+        except KeyboardInterrupt:
+            break
+
+    print("Shut down")
 
 
 main()
