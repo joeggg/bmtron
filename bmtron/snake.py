@@ -43,11 +43,10 @@ class Snake:
         self.crashed = False
         self.heading = Direction.RIGHT
 
-    def set_from_msg(self, msg: bytes) -> None:
-        data = json.loads(msg.decode())
-        self.coords = data[self.player_number]["coords"]
-        self.crashed = data[self.player_number]["crashed"]
-        self.heading = data[self.player_number]["heading"]
+    def set_from_msg(self, data: dict) -> None:
+        self.coords = data["coords"]
+        self.crashed = data["crashed"]
+        self.heading = data["heading"]
 
     def update_coords(self) -> None:
         if self.heading == Direction.UP:

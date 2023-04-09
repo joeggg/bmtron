@@ -2,20 +2,18 @@ from __future__ import annotations
 import time
 import tkinter
 
-
 from .consts import UPDATE_DELAY_MS
 from .display import Display
 from .snake import Snake
-from .socket import Server, Socket
+from .socket import ClientServer, HostServer
 
 
 class Runner:
     def __init__(
         self,
-        num_players: int = 1,
-        player_number: int = 0,
-        server: Server | None = None,
-        client_socket: Socket | None = None,
+        num_players: int,
+        player_number: int,
+        server: HostServer | ClientServer,
         host: bool = False,
     ) -> None:
         self.running = True
@@ -32,25 +30,25 @@ class Runner:
 
         self.display = Display(self.window)
         self.snakes: list[Snake] = [Snake(i) for i in range(num_players)]
-        self.crashed_ids: list[int] = []
+        self.crashed_ids: set[int] = set()
 
-        if self.host:
-            self.server = server
-        else:
-            self.socket = client_socket
+        self.server = server
+        self.server.set_snakes(self.snakes)
 
     @property
     def my_snake(self) -> Snake:
         return self.snakes[self.player_number]
 
     def main(self) -> None:
-        if self.host:
-            self.server.start()  # type: ignore
-
+        self.server.start()
         self.reset_game()
+
         while self.running:
             self.window.update()
             if self.started:
+                if type(self.server) is HostServer:
+                    self.server.send_state()
+
                 self.window.after(UPDATE_DELAY_MS, self.update_snakes())  # type: ignore
 
                 if len(self.crashed_ids) == self.num_players - 1:
@@ -59,18 +57,15 @@ class Runner:
                     self.started = False
                     self.display.display_gameover(winner, time_taken)
 
-            elif not self.host:
-                msg = self.socket.recv()  # type: ignore
-                if msg == b"started":
-                    print("Started")
-                    self.started = True
+            elif type(self.server) is ClientServer:
+                self.server.wait_for_round_start()
+                self.started = True
 
-        if self.host:
-            self.server.shutdown()  # type: ignore
-            self.server.join()  # type: ignore
+        self.server.shutdown()
+        self.server.join()
 
     def reset_game(self) -> None:
-        self.crashed_ids = []
+        self.crashed_ids = set()
         self.display.clear()
         self.display.initialize_board()
 
@@ -100,25 +95,22 @@ class Runner:
             # Check if the pressed key is a valid key
             if self.my_snake.is_key_valid(key_pressed):
                 if not self.host:
-                    self.socket.send(key_pressed.encode())  # type: ignore
-                    msg = self.socket.recv()  # type: ignore
-                    self.my_snake.set_from_msg(msg)
+                    self.server.send(f"{self.player_number},{key_pressed}".encode())
                 else:
                     if not self.started:
-                        self.server.send(b"started")  # type: ignore
+                        self.server.send(b"started")
                         self.started = True
                     self.my_snake.set_heading(key_pressed)
 
     def update_snakes(self) -> None:
-        for snake in self.snakes:
-            if snake.crashed:
-                continue
+        with self.server.lock:
+            for snake in self.snakes:
+                if snake.crashed:
+                    self.crashed_ids.add(snake.player_number)
+                    continue
 
-            if self.host:
-                snake.update_coords()
-                snake.check_if_crashed(self.snakes)
+                if self.host:
+                    snake.update_coords()
+                    snake.check_if_crashed(self.snakes)
 
-            if snake.crashed:
-                self.crashed_ids.append(snake.player_number)
-            else:
                 self.display.display_snake(snake)
