@@ -1,4 +1,5 @@
 import socket
+import threading
 
 
 class Socket:
@@ -19,5 +20,22 @@ class Socket:
         self.sck.settimeout(None)
 
 
-class Server:
-    ...
+class Server(threading.Thread):
+    def __init__(self, sck: socket.socket, addresses: list[tuple[str, int]]) -> None:
+        self.sck = sck
+        self.addresses = addresses
+        self.running = True
+
+    def run(self) -> None:
+        while self.running:
+            try:
+                msg = self.sck.recv(1024)
+            except TimeoutError:
+                ...
+
+    def shutdown(self) -> None:
+        self.running = False
+
+    def send(self, msg: bytes) -> None:
+        for addr in self.addresses:
+            self.sck.sendto(msg, addr)
