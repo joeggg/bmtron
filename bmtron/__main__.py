@@ -9,6 +9,7 @@ def host_main() -> None:
     print("****BMTron****")
     sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sck.settimeout(1)
+    sck.bind(("", 2302))
     addresses: list[tuple[str, int]] = []
 
     while True:
@@ -23,6 +24,7 @@ def host_main() -> None:
         except KeyboardInterrupt:
             break
 
+    print(addr)
     print("Starting game...")
 
 
@@ -30,6 +32,7 @@ def main() -> None:
     print("****BMTron****")
     host = input("Please enter a host IP address: ")
     sck = Socket(host)
+    sck.set_timeout()
 
     sck.send(b"hello host")
     msg = sck.recv()
@@ -39,6 +42,7 @@ def main() -> None:
         return
 
     print("Waiting for host to start game...")
+    sck.unset_timeout()
     msg = sck.recv()  # e.g. 2,1
     num_players, player_number = msg.decode().split(",")
 

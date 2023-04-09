@@ -11,3 +11,9 @@ class Socket:
 
     def recv(self) -> bytes:
         return self.sck.recv(1024)
+
+    def set_timeout(self) -> None:
+        self.sck.settimeout(1)
+
+    def unset_timeout(self) -> None:
+        self.sck.settimeout(None)
