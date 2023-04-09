@@ -2,7 +2,7 @@ from __future__ import annotations
 import socket
 import sys
 from .runner import Runner
-from .socket import Socket
+from .socket import Server, Socket
 
 
 def host_main() -> None:
@@ -12,20 +12,25 @@ def host_main() -> None:
     sck.bind(("", 2302))
     addresses: list[tuple[str, int]] = []
 
-    while True:
-        try:
-            msg, addr = sck.recvfrom(1024)
-            if msg == b"hello host":
-                sck.sendto(b"hello client", addr)
-                addresses.append(addr)
-                print(f"Player {len(addresses) + 1} connected")
-        except TimeoutError:
-            ...
-        except KeyboardInterrupt:
-            break
+    try:
+        while True:
+            try:
+                msg, addr = sck.recvfrom(1024)
+                if msg == b"hello host":
+                    sck.sendto(b"hello client", addr)
+                    addresses.append(addr)
+                    print(f"Player {len(addresses)} connected")
+            except TimeoutError:
+                ...
+    except KeyboardInterrupt:
+        ...
 
-    print(addr)
     print("Starting game...")
+    for i, addr in enumerate(addresses):
+        sck.sendto(f"{len(addresses)},{i+1}".encode(), addr)
+
+    game = Runner(len(addresses), 0, host=True, server=Server())
+    game.main()
 
 
 def main() -> None:
@@ -46,7 +51,7 @@ def main() -> None:
     msg = sck.recv()  # e.g. 2,1
     num_players, player_number = msg.decode().split(",")
 
-    game = Runner(sck, int(num_players), int(player_number), False)
+    game = Runner(int(num_players), int(player_number), host=False, client_socket=sck)
     game.main()
 
 

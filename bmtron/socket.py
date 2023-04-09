@@ -17,3 +17,7 @@ class Socket:
 
     def unset_timeout(self) -> None:
         self.sck.settimeout(None)
+
+
+class Server:
+    ...

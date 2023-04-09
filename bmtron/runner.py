@@ -6,15 +6,16 @@ import tkinter
 from .consts import UPDATE_DELAY_MS
 from .display import Display
 from .snake import Snake
-from .socket import Socket
+from .socket import Server, Socket
 
 
 class Runner:
     def __init__(
         self,
-        socket: Socket,
         num_players: int = 1,
         player_number: int = 0,
+        server: Server | None = None,
+        client_socket: Socket | None = None,
         host: bool = False,
     ) -> None:
         self.running = True
@@ -33,7 +34,10 @@ class Runner:
         self.snakes: list[Snake] = [Snake(i) for i in range(num_players)]
         self.crashed_ids: list[int] = []
 
-        self.socket = socket
+        if self.host:
+            self.server = server
+        else:
+            self.socket = client_socket
 
     @property
     def my_snake(self) -> Snake:
@@ -53,7 +57,7 @@ class Runner:
                     self.display.display_gameover(winner, time_taken)
 
             elif not self.host:
-                msg = self.socket.recv()
+                msg = self.socket.recv()  # type: ignore
                 if msg == b"started":
                     self.started = True
 
@@ -88,8 +92,8 @@ class Runner:
             # Check if the pressed key is a valid key
             if self.my_snake.is_key_valid(key_pressed):
                 if not self.host:
-                    self.socket.send(key_pressed.encode())
-                    msg = self.socket.recv()
+                    self.socket.send(key_pressed.encode())  # type: ignore
+                    msg = self.socket.recv()  # type: ignore
                     self.my_snake.set_from_msg(msg)
                 else:
                     self.started = True
