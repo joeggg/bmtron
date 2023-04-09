@@ -29,7 +29,7 @@ def host_main() -> None:
     for i, addr in enumerate(addresses):
         sck.sendto(f"{len(addresses) + 1},{i+1}".encode(), addr)
 
-    game = Runner(len(addresses) + 1, 0, host=True, server=Server())
+    game = Runner(len(addresses) + 1, 0, host=True, server=Server(sck, addresses))
     game.main()
 
 

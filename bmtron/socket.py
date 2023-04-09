@@ -21,10 +21,13 @@ class Socket:
 
 
 class Server(threading.Thread):
-    def __init__(self, sck: socket.socket, addresses: list[tuple[str, int]]) -> None:
+    def __init__(
+        self, sck: socket.socket, addresses: list[tuple[str, int]], *args, **kwargs
+    ) -> None:
         self.sck = sck
         self.addresses = addresses
         self.running = True
+        super().__init__(*args, **kwargs)
 
     def run(self) -> None:
         while self.running:

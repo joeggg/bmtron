@@ -62,6 +62,7 @@ class Runner:
             elif not self.host:
                 msg = self.socket.recv()  # type: ignore
                 if msg == b"started":
+                    print("Started")
                     self.started = True
 
         if self.host:
