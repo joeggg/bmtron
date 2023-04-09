@@ -55,9 +55,9 @@ class HostServer(Server):
         with self.lock:
             for snake in self.snakes:
                 data[snake.player_number] = {
-                    "coords": snake.coords,
+                    "coords": [[coord.x, coord.y] for coord in snake.coords],
                     "crashed": snake.crashed,
-                    "heading": snake.heading,
+                    "heading": snake.heading.value,
                 }
         self.send(json.dumps(data).encode())
 
@@ -90,7 +90,7 @@ class ClientServer(Server):
         data = json.loads(msg.decode())
         with self.lock:
             for player, state in data.items():
-                self.snakes[player].set_from_msg(state)
+                self.snakes[int(player)].set_from_msg(state)
 
     def send(self, msg: bytes) -> None:
         self.sck.sendto(msg, self.address)
