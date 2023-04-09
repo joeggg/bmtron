@@ -42,15 +42,23 @@ class Snake:
         self.heading = Direction.RIGHT
 
     def update_coords(self) -> None:
-        match self.heading:
-            case Direction.UP:
-                self.coords.append(Coord(self.head.x, self.head.y - 1))
-            case Direction.DOWN:
-                self.coords.append(Coord(self.head.x, self.head.y + 1))
-            case Direction.LEFT:
-                self.coords.append(Coord(self.head.x - 1, self.head.y))
-            case Direction.RIGHT:
-                self.coords.append(Coord(self.head.x + 1, self.head.y))
+        if self.heading == Direction.UP:
+            self.coords.append(Coord(self.head.x, self.head.y - 1))
+        elif self.heading == Direction.DOWN:
+            self.coords.append(Coord(self.head.x, self.head.y + 1))
+        elif self.heading == Direction.LEFT:
+            self.coords.append(Coord(self.head.x - 1, self.head.y))
+        elif self.heading == Direction.RIGHT:
+            self.coords.append(Coord(self.head.x + 1, self.head.y))
+        # match self.heading:
+        #     case Direction.UP:
+        #         self.coords.append(Coord(self.head.x, self.head.y - 1))
+        #     case Direction.DOWN:
+        #         self.coords.append(Coord(self.head.x, self.head.y + 1))
+        #     case Direction.LEFT:
+        #         self.coords.append(Coord(self.head.x - 1, self.head.y))
+        #     case Direction.RIGHT:
+        #         self.coords.append(Coord(self.head.x + 1, self.head.y))
 
     def check_if_crashed(self, snakes: list[Snake]) -> None:
         # Check if it hit the wall or a snake's body

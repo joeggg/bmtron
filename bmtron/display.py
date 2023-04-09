@@ -1,3 +1,4 @@
+from __future__ import annotations
 import tkinter
 
 from .consts import BOARD_SIZE, NUM_COLS, NUM_ROWS
