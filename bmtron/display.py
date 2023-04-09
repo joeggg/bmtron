@@ -42,7 +42,7 @@ class Display:
             fill=Colour.GREEN,
             text=score_text,
         )
-        score_text = f"Winner: Player {winner.player_number}\nScore: {len(winner.coords)}"
+        score_text = f"Winner: Player {winner.player_number + 1}\nScore: {len(winner.coords)}"
         self.canvas.create_text(
             BOARD_SIZE / 2,
             1 * BOARD_SIZE / 2,

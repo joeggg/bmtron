@@ -19,7 +19,7 @@ def host_main() -> None:
                 if msg == b"hello host":
                     sck.sendto(b"hello client", addr)
                     addresses.append(addr)
-                    print(f"Player {len(addresses)} connected")
+                    print(f"Player {len(addresses) + 1} connected")
             except TimeoutError:
                 ...
     except KeyboardInterrupt:
