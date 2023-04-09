@@ -1,5 +1,4 @@
 from __future__ import annotations
-import socket
 import time
 import tkinter
 
@@ -7,13 +6,22 @@ import tkinter
 from .consts import UPDATE_DELAY_MS
 from .display import Display
 from .snake import Snake
+from .socket import Socket
 
 
 class Runner:
-    def __init__(self, num_players: int = 1) -> None:
+    def __init__(
+        self,
+        socket: Socket,
+        num_players: int = 1,
+        player_number: int = 0,
+        host: bool = False,
+    ) -> None:
         self.running = True
         self.started = False
         self.num_players = num_players
+        self.player_number = player_number
+        self.host = host
 
         self.window = tkinter.Tk()
         self.window.title("bmtron")
@@ -25,9 +33,11 @@ class Runner:
         self.snakes: list[Snake] = [Snake(i) for i in range(num_players)]
         self.crashed_ids: list[int] = []
 
-        self.sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.addr = ("5.64.46.17", 2302)
-        self.sck.settimeout(1)
+        self.socket = socket
+
+    @property
+    def my_snake(self) -> Snake:
+        return self.snakes[self.player_number]
 
     def main(self) -> None:
         self.reset_game()
@@ -41,6 +51,11 @@ class Runner:
                     winner = self.find_winner()
                     self.started = False
                     self.display.display_gameover(winner, time_taken)
+
+            elif not self.host:
+                msg = self.socket.recv()
+                if msg == b"started":
+                    self.started = True
 
     def reset_game(self) -> None:
         self.crashed_ids = []
@@ -68,24 +83,26 @@ class Runner:
         self.reset_game()
 
     def key_input(self, event: tkinter.Event) -> None:
-        for snake in self.snakes:
-            if not snake.crashed:
-                key_pressed = event.keysym
-                # Check if the pressed key is a valid key
-                if snake.is_key_valid(key_pressed):
-                    self.sck.sendto(key_pressed.encode(), self.addr)
-                    msg = self.sck.recv(1024)
-                    print(msg)
+        if not self.my_snake.crashed:
+            key_pressed = event.keysym
+            # Check if the pressed key is a valid key
+            if self.my_snake.is_key_valid(key_pressed):
+                if not self.host:
+                    self.socket.send(key_pressed.encode())
+                    msg = self.socket.recv()
+                    self.my_snake.set_from_msg(msg)
+                else:
                     self.started = True
-                    snake.set_heading(key_pressed)
+                    self.my_snake.set_heading(key_pressed)
 
     def update_snakes(self) -> None:
         for snake in self.snakes:
             if snake.crashed:
                 continue
 
-            snake.update_coords()
-            snake.check_if_crashed(self.snakes)
+            if self.host:
+                snake.update_coords()
+                snake.check_if_crashed(self.snakes)
 
             if snake.crashed:
                 self.crashed_ids.append(snake.player_number)

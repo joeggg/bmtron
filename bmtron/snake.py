@@ -1,4 +1,5 @@
 from __future__ import annotations
+import json
 
 from .consts import (
     COLOUR_BINDINGS,
@@ -9,22 +10,23 @@ from .consts import (
 )
 from .data_types import Colour, Coord, Direction
 
+FORBIDDEN_ACTIONS = {
+    Direction.RIGHT: Direction.LEFT,
+    Direction.LEFT: Direction.RIGHT,
+    Direction.UP: Direction.DOWN,
+    Direction.DOWN: Direction.UP,
+}
+
 
 class Snake:
     def __init__(self, player_number: int) -> None:
         self.coords: list[Coord] = []
         self.crashed = False
         self.heading = Direction.RIGHT
-        self.object_ids: list[int] = []
-        self.forbidden_actions = {
-            Direction.RIGHT: Direction.LEFT,
-            Direction.LEFT: Direction.RIGHT,
-            Direction.UP: Direction.DOWN,
-            Direction.DOWN: Direction.UP,
-        }
 
+        self.object_ids: list[int] = []
         self.colour: Colour = COLOUR_BINDINGS[player_number]
-        self.key_bindings: dict[str, Direction] = KEY_BINDINGS[player_number]
+        self.key_bindings: dict[str, Direction] = KEY_BINDINGS[0]
         self.player_number = player_number
 
     @property
@@ -40,6 +42,12 @@ class Snake:
         self.object_ids = []
         self.crashed = False
         self.heading = Direction.RIGHT
+
+    def set_from_msg(self, msg: bytes) -> None:
+        data = json.loads(msg.decode())
+        self.coords = data[self.player_number]["coords"]
+        self.crashed = data[self.player_number]["crashed"]
+        self.heading = data[self.player_number]["heading"]
 
     def update_coords(self) -> None:
         if self.heading == Direction.UP:
@@ -86,7 +94,7 @@ class Snake:
         if (direction := self.key_bindings.get(key)) is None:
             return False
 
-        if self.forbidden_actions[self.heading] == direction:
+        if FORBIDDEN_ACTIONS[self.heading] == direction:
             return False
 
         return True
