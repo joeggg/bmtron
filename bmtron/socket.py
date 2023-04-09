@@ -33,6 +33,7 @@ class Server(threading.Thread):
         while self.running:
             try:
                 msg = self.sck.recv(1024)
+                print(msg)
             except TimeoutError:
                 ...
 

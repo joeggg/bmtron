@@ -27,7 +27,7 @@ class Runner:
         self.window = tkinter.Tk()
         self.window.title("bmtron")
         self.window.bind("<Key>", self.key_input)
-        self.window.bind("<Button-1>", self.mouse_input)
+        # self.window.bind("<Button-1>", self.mouse_input)
         self.window.protocol("WM_DELETE_WINDOW", self.shut_down)
 
         self.display = Display(self.window)
@@ -104,8 +104,9 @@ class Runner:
                     msg = self.socket.recv()  # type: ignore
                     self.my_snake.set_from_msg(msg)
                 else:
-                    self.server.send(b"started")  # type: ignore
-                    self.started = True
+                    if not self.started:
+                        self.server.send(b"started")  # type: ignore
+                        self.started = True
                     self.my_snake.set_heading(key_pressed)
 
     def update_snakes(self) -> None:
