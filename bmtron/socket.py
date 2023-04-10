@@ -20,7 +20,7 @@ class Server(threading.Thread):
         while self.running:
             try:
                 self.listen()
-            except TimeoutError:
+            except (TimeoutError, socket.error):
                 ...
 
             time.sleep(0.01)
@@ -74,7 +74,7 @@ class HostServer(Server):
                         self.sck.sendto(b"hello client", addr)
                         self.addresses.append(addr)
                         print(f"Player {len(self.addresses) + 1} connected")
-                except TimeoutError:
+                except (TimeoutError, socket.error):
                     ...
         except KeyboardInterrupt:
             ...
@@ -115,7 +115,7 @@ class ClientServer(Server):
                 msg = self.sck.recv(1024)
                 num_players, player_number = msg.decode().split(",")
                 return int(num_players), int(player_number)
-            except TimeoutError:
+            except (TimeoutError, socket.error):
                 ...
 
             time.sleep(0.01)
