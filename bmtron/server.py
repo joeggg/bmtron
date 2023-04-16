@@ -1,14 +1,15 @@
 import json
 import socket
 import threading
-import time
+import tkinter
 
 from .snake import Snake
 
 
 class Server(threading.Thread):
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self, window: tkinter.Tk) -> None:
+        super().__init__()
+        self.window = window
         self.sck = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sck.settimeout(1)
         self.running = False
@@ -19,16 +20,18 @@ class Server(threading.Thread):
 
     def run(self) -> None:
         self.running = True
-        while self.running:
+        while True:
             try:
                 msg = self.sck.recv(1024)
                 self.received_packets += 1
-                print(f"received: {msg.decode()}")
                 self.handle_message(msg)
             except (TimeoutError, socket.error):
                 ...
 
-            time.sleep(0.01)
+            if self.running:
+                self.window.after(5, lambda: ...)
+            else:
+                break
 
     def handle_message(self, msg: bytes) -> None:
         raise NotImplementedError
@@ -44,8 +47,8 @@ class Server(threading.Thread):
 
 
 class HostServer(Server):
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self, window: tkinter.Tk) -> None:
+        super().__init__(window)
         self.sck.bind(("", 2302))
         self.addresses: list[tuple[str, int]] = []
 
@@ -71,7 +74,7 @@ class HostServer(Server):
                 }
         self.send(json.dumps(data).encode())
 
-    def wait_for_players(self) -> None:
+    def wait_for_players(self) -> tuple[int, int]:
         try:
             while True:
                 try:
@@ -85,14 +88,16 @@ class HostServer(Server):
         except KeyboardInterrupt:
             ...
 
+        return len(self.addresses) + 1, 0
+
     def start_game(self) -> None:
         for i, addr in enumerate(self.addresses):
             self.sck.sendto(f"{len(self.addresses) + 1},{i+1}".encode(), addr)
 
 
 class ClientServer(Server):
-    def __init__(self, address: tuple[str, int], *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self, window: tkinter.Tk, address: tuple[str, int]) -> None:
+        super().__init__(window)
         self.address = address
         self.started = False
         self.game_over = False
@@ -131,14 +136,14 @@ class ClientServer(Server):
             except (TimeoutError, socket.error):
                 ...
 
-            time.sleep(0.01)
+            self.window.after(5, lambda: ...)
 
     def wait_for_round_start(self) -> None:
         while not self.started:
-            time.sleep(0.1)
+            self.window.after(5, lambda: ...)
         self.started = False
 
     def wait_for_new_round(self) -> None:
         while self.game_over:
-            time.sleep(0.1)
+            self.window.after(5, lambda: ...)
         self.game_over = True

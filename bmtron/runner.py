@@ -1,4 +1,5 @@
 from __future__ import annotations
+import threading
 import time
 import tkinter
 
@@ -8,26 +9,26 @@ from .server import ClientServer, HostServer
 from .snake import Snake
 
 
-class Runner:
+class Runner(threading.Thread):
     def __init__(
         self,
+        window: tkinter.Tk,
+        server: HostServer | ClientServer,
         num_players: int,
         player_number: int,
-        server: HostServer | ClientServer,
-        host: bool = False,
     ) -> None:
+        super().__init__()
         self.running = True
         self.started = False  # Round has started
         self.game_over = False  # Waiting on the gameover screen
         self.num_players = num_players
         self.player_number = player_number
-        self.host = host
+        self.host = type(server) is HostServer
         self.begin_time = 0.0
 
-        self.window = tkinter.Tk()
+        self.window = window
         self.window.title("bmtron")
         self.window.bind("<Key>", self.key_input)
-        self.window.protocol("WM_DELETE_WINDOW", self.shut_down)
 
         if self.host:
             self.window.bind("<Button-1>", self.mouse_input)
@@ -39,40 +40,44 @@ class Runner:
         self.server = server
         self.server.set_snakes(self.snakes)
 
+        def shut_down() -> None:
+            nonlocal self
+            self.running = False
+            self.server.shutdown()
+            self.server.join()
+            window.quit()
+
+        self.window.protocol("WM_DELETE_WINDOW", shut_down)
+
     @property
     def my_snake(self) -> Snake:
         return self.snakes[self.player_number]
 
-    def main(self) -> None:
+    def run(self) -> None:
         self.server.start()
         self.reset_game()
 
         while self.running:
-            try:
-                self.window.update()
-                if self.started:
-                    if type(self.server) is HostServer:
-                        self.server.send_state()
+            if self.started:
+                if type(self.server) is HostServer:
+                    self.server.send_state()
 
-                    self.window.after(UPDATE_DELAY_MS, self.update_snakes())  # type: ignore
+                self.window.after(UPDATE_DELAY_MS, self.update_snakes())  # type: ignore
 
-                    if type(self.server) is ClientServer:
-                        if self.server.game_over:
-                            self.stop_round()
-                    else:
-                        if len(self.crashed_ids) == self.num_players - 1:
-                            self.stop_round()
+                if type(self.server) is ClientServer:
+                    if self.server.game_over:
+                        self.stop_round()
+                else:
+                    if len(self.crashed_ids) == self.num_players - 1:
+                        self.stop_round()
 
-                elif type(self.server) is ClientServer:
-                    if self.game_over:
-                        self.server.wait_for_new_round()
-                        self.reset_game()
-                    else:
-                        self.server.wait_for_round_start()
-                        self.start_round()
-
-            except KeyboardInterrupt:
-                break
+            elif type(self.server) is ClientServer:
+                if self.game_over:
+                    self.server.wait_for_new_round()
+                    self.reset_game()
+                else:
+                    self.server.wait_for_round_start()
+                    self.start_round()
 
         self.server.shutdown()
         self.server.join()
