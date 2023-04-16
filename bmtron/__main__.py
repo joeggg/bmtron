@@ -12,7 +12,6 @@ def main() -> None:
     server: ClientServer | HostServer
 
     if len(sys.argv) > 1 and sys.argv[1] == "host":
-        input("hi")
         server = HostServer(window)
         print("Waiting for players to join...")
         # server.addresses = [("localhost", 1), ("localhost", 1), ("localhost", 1)]
