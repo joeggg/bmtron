@@ -2,8 +2,8 @@ from __future__ import annotations
 import tkinter
 
 from .consts import BOARD_SIZE, NUM_COLS, NUM_ROWS
-from .snake import Snake
 from .data_types import Colour, Coord
+from .snake import Snake
 
 
 class Display:

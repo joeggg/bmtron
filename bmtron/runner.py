@@ -4,8 +4,8 @@ import tkinter
 
 from .consts import UPDATE_DELAY_MS
 from .display import Display
+from .server import ClientServer, HostServer
 from .snake import Snake
-from .socket import ClientServer, HostServer
 
 
 class Runner:

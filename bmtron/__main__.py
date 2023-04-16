@@ -2,7 +2,7 @@ from __future__ import annotations
 import sys
 
 from .runner import Runner
-from .socket import ClientServer, HostServer
+from .server import ClientServer, HostServer
 
 
 def client_main() -> None:
