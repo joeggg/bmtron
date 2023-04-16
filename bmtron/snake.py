@@ -1,12 +1,6 @@
 from __future__ import annotations
 
-from .consts import (
-    COLOUR_BINDINGS,
-    KEY_BINDINGS,
-    NUM_COLS,
-    NUM_ROWS,
-    SNAKE_INITIAL_LENGTH,
-)
+from .consts import COLOUR_BINDINGS, KEY_BINDINGS, NUM_COLS, NUM_ROWS, START_POSITIONS
 from .data_types import Colour, Coord, Direction
 
 FORBIDDEN_ACTIONS = {
@@ -37,13 +31,15 @@ class Snake:
         return self.coords[0]
 
     def reset_postition(self) -> None:
-        self.coords = [Coord(i, 5 * self.player_number) for i in range(SNAKE_INITIAL_LENGTH)]
+        self.coords = [START_POSITIONS[self.player_number]]
         self.object_ids = []
         self.crashed = False
         self.heading = Direction.RIGHT
 
     def set_from_msg(self, data: dict) -> None:
-        self.coords = [Coord(coord[0], coord[1]) for coord in data["coords"]]
+        update_coords = [Coord(coord[0], coord[1]) for coord in data["coords"]]
+        self.coords[-4:] = update_coords[:-1]
+        self.coords.append(update_coords[-1])
         self.crashed = data["crashed"]
         self.heading = Direction(data["heading"])
 
@@ -89,12 +85,8 @@ class Snake:
                     return
 
     def is_key_valid(self, key: str) -> bool:
-        if (direction := self.key_bindings.get(key)) is None:
+        if self.key_bindings.get(key) is None:
             return False
-
-        if FORBIDDEN_ACTIONS[self.heading] == direction:
-            return False
-
         return True
 
     def set_heading(self, key_pressed: str) -> None:

@@ -63,8 +63,9 @@ class HostServer(Server):
         data = {}
         with self.lock:
             for snake in self.snakes:
+                min_index = 0 if len(snake.coords) < 5 else -5
                 data[snake.player_number] = {
-                    "coords": [[coord.x, coord.y] for coord in snake.coords],
+                    "coords": [[coord.x, coord.y] for coord in snake.coords[min_index:]],
                     "crashed": snake.crashed,
                     "heading": snake.heading.value,
                 }

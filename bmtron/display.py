@@ -78,14 +78,14 @@ class Display:
                     )
                 )
         else:
-            # Only update head
-            coord = snake.coords[-1]
-            x1 = coord.x * self.row_height
-            y1 = coord.y * self.col_width
-            x2 = x1 + self.row_height
-            y2 = y1 + self.col_width
-            snake.object_ids.append(
-                self.canvas.create_rectangle(
-                    x1, y1, x2, y2, fill=snake.colour, outline=snake.colour
+            # Only update last 5 sections
+            for coord in snake.coords[-5:]:
+                x1 = coord.x * self.row_height
+                y1 = coord.y * self.col_width
+                x2 = x1 + self.row_height
+                y2 = y1 + self.col_width
+                snake.object_ids.append(
+                    self.canvas.create_rectangle(
+                        x1, y1, x2, y2, fill=snake.colour, outline=snake.colour
+                    )
                 )
-            )
