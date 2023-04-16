@@ -30,7 +30,7 @@ def main() -> None:
         num_players, player_number = server.wait_for_game_start()
 
     game = Runner(window, server, num_players, player_number)
-    game.main()
+    game.run()
 
 
 if __name__ == "__main__":

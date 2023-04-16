@@ -17,10 +17,11 @@ class Runner:
         num_players: int,
         player_number: int,
     ) -> None:
-        super().__init__()
+        # Control bools
         self.running = True
         self.started = False  # Round has started
         self.game_over = False  # Waiting on the gameover screen
+
         self.num_players = num_players
         self.player_number = player_number
         self.host = type(server) is HostServer
@@ -32,7 +33,7 @@ class Runner:
 
         self.server = server
         self.server.set_snakes(self.snakes)
-        self.main_thread = threading.Thread(target=self.run)
+        self.main_thread = threading.Thread(target=self.main)
 
         self.window = window
         self.window.title("bmtron")
@@ -51,7 +52,7 @@ class Runner:
     def my_snake(self) -> Snake:
         return self.snakes[self.player_number]
 
-    def main(self) -> None:
+    def run(self) -> None:
         try:
             self.server.start()
             self.main_thread.start()
@@ -59,7 +60,7 @@ class Runner:
         except KeyboardInterrupt:
             self.shut_down()
 
-    def run(self) -> None:
+    def main(self) -> None:
         self.reset_game()
 
         while self.running:
