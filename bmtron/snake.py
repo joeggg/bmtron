@@ -17,7 +17,6 @@ class Snake:
         self.crashed = False
         self.heading = Direction.RIGHT
 
-        self.object_ids: list[int] = []
         self.colour: Colour = COLOUR_BINDINGS[player_number]
         self.key_bindings: dict[str, Direction] = KEY_BINDINGS[0]
         self.player_number = player_number
@@ -32,7 +31,6 @@ class Snake:
 
     def reset_postition(self) -> None:
         self.coords = [START_POSITIONS[self.player_number]]
-        self.object_ids = []
         self.crashed = False
         self.heading = Direction.RIGHT
 

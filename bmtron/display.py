@@ -72,10 +72,8 @@ class Display:
                 y1 = coord.y * self.col_width
                 x2 = x1 + self.row_height
                 y2 = y1 + self.col_width
-                snake.object_ids.append(
-                    self.canvas.create_rectangle(
-                        x1, y1, x2, y2, fill=snake.colour, outline=snake.colour
-                    )
+                self.canvas.create_rectangle(
+                    x1, y1, x2, y2, fill=snake.colour, outline=snake.colour
                 )
         else:
             # Only update last 5 sections
@@ -84,8 +82,7 @@ class Display:
                 y1 = coord.y * self.col_width
                 x2 = x1 + self.row_height
                 y2 = y1 + self.col_width
-                snake.object_ids.append(
-                    self.canvas.create_rectangle(
-                        x1, y1, x2, y2, fill=snake.colour, outline=snake.colour
-                    )
+
+                self.canvas.create_rectangle(
+                    x1, y1, x2, y2, fill=snake.colour, outline=snake.colour
                 )
