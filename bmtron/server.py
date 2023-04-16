@@ -14,28 +14,33 @@ class Server(threading.Thread):
         self.running = False
         self.lock = threading.Lock()
         self.snakes: list[Snake] = []
+        self.sent_packets = 0
+        self.received_packets = 0
 
     def run(self) -> None:
         self.running = True
         while self.running:
             try:
-                self.listen()
+                msg = self.sck.recv(1024)
+                self.received_packets += 1
+                self.handle_message(msg)
             except (TimeoutError, socket.error):
                 ...
 
             time.sleep(0.01)
 
-    def listen(self) -> None:
+    def handle_message(self, msg: bytes) -> None:
         raise NotImplementedError
 
     def send(self, msg: bytes) -> None:
-        raise NotImplementedError
+        self.sent_packets += 1
 
     def set_snakes(self, snakes: list[Snake]) -> None:
         self.snakes = snakes
 
     def shutdown(self) -> None:
         self.running = False
+        print(f"Packets sent: {self.sent_packets}, packets received: {self.received_packets}")
 
 
 class HostServer(Server):
@@ -44,13 +49,13 @@ class HostServer(Server):
         self.sck.bind(("", 2302))
         self.addresses: list[tuple[str, int]] = []
 
-    def listen(self) -> None:
-        msg = self.sck.recv(1024)
+    def handle_message(self, msg: bytes) -> None:
         player_number, key = msg.decode().split(",")
         with self.lock:
             self.snakes[int(player_number)].set_heading(key)
 
     def send(self, msg: bytes) -> None:
+        super().send(msg)
         for addr in self.addresses:
             self.sck.sendto(msg, addr)
 
@@ -92,8 +97,7 @@ class ClientServer(Server):
         self.game_over = False
         self.winner = 0
 
-    def listen(self) -> None:
-        msg = self.sck.recv(1024)
+    def handle_message(self, msg: bytes) -> None:
         if msg == b"started":
             self.started = True
         elif msg == b"gamestarted":
@@ -108,6 +112,7 @@ class ClientServer(Server):
                     self.snakes[int(player)].set_from_msg(state)
 
     def send(self, msg: bytes) -> None:
+        super().send(msg)
         self.sck.sendto(msg, self.address)
 
     def connect_to_host(self) -> None:
