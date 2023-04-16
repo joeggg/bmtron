@@ -30,12 +30,15 @@ def main() -> None:
         num_players, player_number = server.wait_for_game_start()
 
     game = Runner(window, server, num_players, player_number)
-    game.start()
 
     try:
+        server.start()
+        game.start()
         window.mainloop()
     except KeyboardInterrupt:
+        server.shutdown()
         game.shut_down()
+        server.join()
         game.join()
         window.quit()
 

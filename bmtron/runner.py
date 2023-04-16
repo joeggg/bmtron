@@ -54,7 +54,6 @@ class Runner(threading.Thread):
         return self.snakes[self.player_number]
 
     def run(self) -> None:
-        self.server.start()
         self.reset_game()
 
         while self.running:
@@ -78,9 +77,6 @@ class Runner(threading.Thread):
                 else:
                     self.server.wait_for_round_start()
                     self.start_round()
-
-        self.server.shutdown()
-        self.server.join()
 
     def reset_game(self) -> None:
         self.crashed_ids = set()
