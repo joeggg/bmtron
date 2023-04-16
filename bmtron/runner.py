@@ -9,7 +9,7 @@ from .server import ClientServer, HostServer
 from .snake import Snake
 
 
-class Runner(threading.Thread):
+class Runner:
     def __init__(
         self,
         window: tkinter.Tk,
@@ -26,6 +26,14 @@ class Runner(threading.Thread):
         self.host = type(server) is HostServer
         self.begin_time = 0.0
 
+        self.display = Display(window)
+        self.snakes: list[Snake] = [Snake(i) for i in range(num_players)]
+        self.crashed_ids: set[int] = set()
+
+        self.server = server
+        self.server.set_snakes(self.snakes)
+        self.main_thread = threading.Thread(target=self.run)
+
         self.window = window
         self.window.title("bmtron")
         self.window.bind("<Key>", self.key_input)
@@ -33,25 +41,23 @@ class Runner(threading.Thread):
         if self.host:
             self.window.bind("<Button-1>", self.mouse_input)
 
-        self.display = Display(self.window)
-        self.snakes: list[Snake] = [Snake(i) for i in range(num_players)]
-        self.crashed_ids: set[int] = set()
-
-        self.server = server
-        self.server.set_snakes(self.snakes)
-
         def shut_down() -> None:
             nonlocal self
-            self.running = False
-            self.server.shutdown()
-            self.server.join()
-            window.quit()
+            self.shut_down()
 
         self.window.protocol("WM_DELETE_WINDOW", shut_down)
 
     @property
     def my_snake(self) -> Snake:
         return self.snakes[self.player_number]
+
+    def main(self) -> None:
+        try:
+            self.server.start()
+            self.main_thread.start()
+            self.window.mainloop()
+        except KeyboardInterrupt:
+            self.shut_down()
 
     def run(self) -> None:
         self.reset_game()
@@ -116,6 +122,10 @@ class Runner(threading.Thread):
 
     def shut_down(self) -> None:
         self.running = False
+        self.server.shut_down()
+        self.server.join()
+        self.main_thread.join()
+        self.window.quit()
 
     def find_winner(self) -> Snake:
         for snake in self.snakes:

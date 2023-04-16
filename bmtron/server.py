@@ -40,7 +40,7 @@ class Server(threading.Thread):
     def set_snakes(self, snakes: list[Snake]) -> None:
         self.snakes = snakes
 
-    def shutdown(self) -> None:
+    def shut_down(self) -> None:
         self.running = False
 
 
@@ -137,11 +137,11 @@ class ClientServer(Server):
             time.sleep(0.05)
 
     def wait_for_round_start(self) -> None:
-        while not self.started:
+        while self.running and not self.started:
             self.window.after(5, lambda: ...)
         self.started = False
 
     def wait_for_new_round(self) -> None:
-        while self.game_over:
+        while self.running and self.game_over:
             self.window.after(5, lambda: ...)
         self.game_over = True
