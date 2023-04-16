@@ -40,7 +40,6 @@ class Server(threading.Thread):
 
     def shutdown(self) -> None:
         self.running = False
-        print(f"Packets sent: {self.sent_packets}, packets received: {self.received_packets}")
 
 
 class HostServer(Server):

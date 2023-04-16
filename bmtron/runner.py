@@ -109,6 +109,9 @@ class Runner:
         self.started = False
         self.game_over = True
         self.display.display_gameover(winner, time_taken)
+        print(
+            f"Packets sent: {self.server.sent_packets}, packets received: {self.server.received_packets}"
+        )
 
     def shut_down(self) -> None:
         self.running = False
