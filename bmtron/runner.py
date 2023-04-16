@@ -93,7 +93,6 @@ class Runner:
             snake.reset_postition()
             self.display.display_snake(snake, draw_all=True)
 
-        self.window.update()
         self.game_over = False
 
         if type(self.server) is ClientServer:
