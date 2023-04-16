@@ -89,16 +89,23 @@ class ClientServer(Server):
         super().__init__(*args, **kwargs)
         self.address = address
         self.started = False
+        self.game_over = False
+        self.winner = 0
 
     def listen(self) -> None:
         msg = self.sck.recv(1024)
         if msg == b"started":
             self.started = True
-            return
-        data = json.loads(msg.decode())
-        with self.lock:
-            for player, state in data.items():
-                self.snakes[int(player)].set_from_msg(state)
+        elif msg == b"gamestarted":
+            self.game_over = False
+        elif msg.startswith(b"gameover"):
+            self.game_over = True
+            self.winner = int(msg.split(b"#")[-1].decode())
+        else:
+            data = json.loads(msg.decode())
+            with self.lock:
+                for player, state in data.items():
+                    self.snakes[int(player)].set_from_msg(state)
 
     def send(self, msg: bytes) -> None:
         self.sck.sendto(msg, self.address)
@@ -123,3 +130,9 @@ class ClientServer(Server):
     def wait_for_round_start(self) -> None:
         while not self.started:
             time.sleep(0.1)
+        self.started = False
+
+    def wait_for_new_round(self) -> None:
+        while self.game_over:
+            time.sleep(0.1)
+        self.game_over = True

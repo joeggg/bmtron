@@ -20,8 +20,10 @@ class Direction(Enum):
 
 class Colour(str, Enum):
     BLACK = "#FFFFFF"
-    RED = "#EE4035"
-    BLUE = "#0492CF"
+    GREY = "#383838"
+    RED = "#99453D"
+    BLUE = "#376187"
     GREEN = "#7BC043"
-    LIGHT_BLUE = "#67B0CF"
+    LIGHT_GREY = "#454545"
     LIGHT_RED = "#EE7E77"
+    LIGHT_BLUE = "#67B0CF"

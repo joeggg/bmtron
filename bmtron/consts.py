@@ -2,17 +2,14 @@ from __future__ import annotations
 from .data_types import Colour, Direction
 
 
-BOARD_SIZE = 1000
-NUM_ROWS = 40
-NUM_COLS = 40
+BOARD_WIDTH = 1000
+BOARD_HEIGHT = 700
+NUM_ROWS = 35
+NUM_COLS = 50
 
 UPDATE_DELAY_MS = 90
 
 SNAKE_INITIAL_LENGTH = 3
-
-# Unused
-SYMBOL_SIZE = (BOARD_SIZE / 3 - BOARD_SIZE / 8) / 2
-SYMBOL_THICKNESS = 2
 
 COLOUR_BINDINGS: dict[int, Colour] = {
     0: Colour.RED,
