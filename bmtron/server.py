@@ -23,6 +23,7 @@ class Server(threading.Thread):
             try:
                 msg = self.sck.recv(1024)
                 self.received_packets += 1
+                print(f"received: {msg.decode()}")
                 self.handle_message(msg)
             except (TimeoutError, socket.error):
                 ...
