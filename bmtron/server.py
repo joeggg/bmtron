@@ -1,6 +1,7 @@
 import json
 import socket
 import threading
+import time
 import tkinter
 
 from .snake import Snake
@@ -20,7 +21,7 @@ class Server(threading.Thread):
 
     def run(self) -> None:
         self.running = True
-        while True:
+        while self.running:
             try:
                 msg = self.sck.recv(1024)
                 self.received_packets += 1
@@ -28,10 +29,7 @@ class Server(threading.Thread):
             except (TimeoutError, socket.error):
                 ...
 
-            if self.running:
-                self.window.after(5, lambda: ...)
-            else:
-                break
+            time.sleep(0.05)
 
     def handle_message(self, msg: bytes) -> None:
         raise NotImplementedError
@@ -136,7 +134,7 @@ class ClientServer(Server):
             except (TimeoutError, socket.error):
                 ...
 
-            self.window.after(5, lambda: ...)
+            time.sleep(0.05)
 
     def wait_for_round_start(self) -> None:
         while not self.started:

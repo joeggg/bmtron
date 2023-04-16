@@ -8,10 +8,10 @@ from .server import ClientServer, HostServer
 
 def main() -> None:
     print("****BMTron****")
-    window = tkinter.Tk()
     server: ClientServer | HostServer
 
     if len(sys.argv) > 1 and sys.argv[1] == "host":
+        window = tkinter.Tk()
         server = HostServer(window)
         print("Waiting for players to join...")
         # server.addresses = [("localhost", 1), ("localhost", 1), ("localhost", 1)]
@@ -22,6 +22,7 @@ def main() -> None:
 
     else:
         host = input("Please enter a host IP address: ")
+        window = tkinter.Tk()
         server = ClientServer(window, (host, 2302))
         server.connect_to_host()
 
